@@ -1,0 +1,299 @@
+#!/bin/bash
+# sealed-council — your agents mark the papers, not the names
+#   seats | new <q> | ask [--repo] [--replace] <round> [seat...]
+#   seal <round> | rank <round> [seat...] | reveal <round> | status <round>
+# Env: SC_HOME (absolute), SC_TIMEOUT (positive int). Identity-masked (names hidden).
+
+set -u
+set -m 2>/dev/null || true
+umask 077
+
+SC_HOME="${SC_HOME:-$HOME/.sealed-council}"
+SC_TIMEOUT="${SC_TIMEOUT:-600}"
+MAX=65536
+PREAMBLE='Answer alone. Do not look for other answers. Plain markdown, max 600 words.'
+
+usage() { sed -n '2,6p' "$0" | sed 's/^# \{0,1\}//'; exit 1; }
+die() { echo "sealed-council: $1" >&2; exit 1; }
+nbytes() { wc -c < "$1" | tr -d ' '; }
+nstr() { printf '%s' "$1" | wc -c | tr -d ' '; }
+filehash() { (command -v sha256sum >/dev/null 2>&1 && sha256sum "$1" || shasum -a 256 "$1") | awk '{print $1}'; }
+list_seats() { local s; for s in claude codex agent; do command -v "$s" >/dev/null 2>&1 && printf '%s\n' "$s"; done; }
+round_base() { basename "$1"; }
+ansdir() { printf '%s\n' "$SC_HOME/rounds/$(round_base "$1")/answers"; }
+mapfile() { printf '%s\n' "$SC_HOME/maps/$(round_base "$1").tsv"; }
+rankmap() { printf '%s\n' "$SC_HOME/maps/$(round_base "$1").ranks"; }
+errlog() { printf '%s\n' "$SC_HOME/rounds/$(round_base "$1")/logs/$2.err"; }
+pick_seats() { if [ $# -gt 0 ]; then echo "$*"; else list_seats | tr '\n' ' '; fi; }
+
+case $SC_HOME in /*) ;; *) die "SC_HOME must be an absolute path" ;; esac
+case $SC_TIMEOUT in ''|*[!0-9]*|0) die "SC_TIMEOUT must be a positive integer" ;; esac
+
+wait_pid() { # timeout_s pid; kill -$pid process group
+  local secs=$1 pid=$2 n=0
+  while kill -0 "$pid" 2>/dev/null; do
+    [ "$n" -ge "$secs" ] && { kill -- "-$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true; return 124; }
+    sleep 1; n=$((n + 1))
+  done
+  wait "$pid"; return $?
+}
+
+run_seat() { # seat outfile prompt cwd errfile
+  local seat=$1 out=$2 prompt=$3 cwd=$4 err=$5 pf st
+  [ "$(nstr "$prompt")" -le "$MAX" ] || { echo "sealed-council: prompt exceeds 64 KiB" >&2; return 2; }
+  pf=$(mktemp "${TMPDIR:-/tmp}/sc-p.XXXXXX") || return 1
+  printf '%s' "$prompt" >"$pf"
+  mkdir -p "$(dirname "$err")"
+  case $seat in
+    claude) (cd "$cwd" && exec claude -p --tools Read,Grep,Glob <"$pf" >"$out" 2>"$err") >/dev/null & ;;
+    agent)  (cd "$cwd" && exec agent -p --trust --mode ask --output-format text "$prompt" >"$out" 2>"$err") >/dev/null & ;;
+    codex)  (cd "$cwd" && exec codex exec -s read-only --ephemeral --skip-git-repo-check -o "$out" - <"$pf" >/dev/null 2>"$err") >/dev/null & ;;
+    *) rm -f "$pf"; return 127 ;;
+  esac
+  wait_pid "$SC_TIMEOUT" $!
+  st=$?; rm -f "$pf"; return $st
+}
+
+fail_seat() {
+  local st=$1 seat=$2 err=${3:-} last=; [ -n "$err" ] && [ -s "$err" ] && last=$(tail -n 1 "$err")
+  if [ "$st" -eq 124 ]; then echo "seat $seat: timeout" >&2
+  elif [ -n "$last" ]; then echo "seat $seat: failed (exit $st): $last" >&2
+  else echo "seat $seat: failed (exit $st)" >&2; fi
+}
+lets() { printf '%s\n' $1 | grep -E '^[A-Z]$'; }
+ok_rank() { # file offered_ex — exact letter set, each once
+  local line got exp
+  line=$(grep -E '^RANK:' "$1" | head -1) || return 1
+  got=$(printf '%s' "${line#RANK:}" | tr '>' ' '); exp=$(printf '%s' "$2" | tr '>' ' ')
+  [ "$(lets "$got" | sort -u | wc -l | tr -d ' ')" = "$(lets "$got" | wc -l | tr -d ' ')" ] || return 1
+  [ "$(lets "$got" | sort)" = "$(lets "$exp" | sort)" ]
+}
+
+ask_one() {
+  local seat=$1 round=$2 repo=$3 tmp st cwd adir err
+  adir=$(ansdir "$round"); err=$(errlog "$round" "$seat")
+  tmp=$(mktemp "${TMPDIR:-/tmp}/sc.XXXXXX") || return 0
+  if [ "$repo" -eq 1 ]; then cwd=$PWD
+  else
+    cwd=$(mktemp -d "${TMPDIR:-/tmp}/sc-w.XXXXXX") || { rm -f "$tmp"; fail_seat 1 "$seat"; return 0; }
+    cp "$round/brief.md" "$cwd/brief.md"
+  fi
+  run_seat "$seat" "$tmp" "$PREAMBLE
+
+$(cat "$round/brief.md")" "$cwd" "$err"
+  st=$?
+  [ "$repo" -eq 0 ] && rm -rf "$cwd"
+  if [ "$st" -ne 0 ] || [ ! -s "$tmp" ]; then
+    [ "$st" -eq 0 ] && st=1
+    rm -f "$tmp"; fail_seat "$st" "$seat" "$err"; return 0
+  fi
+  mkdir -p "$adir"
+  mv "$tmp" "$adir/${seat}.md"
+}
+
+cmd_new() {
+  [ $# -ge 1 ] || die "usage: sealed-council new <question-file-or-text>"
+  local text slug ts hex dir
+  if [ -f "$1" ] && [ $# -eq 1 ]; then text=$(cat "$1"); else text="$*"; fi
+  slug=$(printf '%s' "$text" | LC_ALL=C tr -cs 'A-Za-z0-9' '-' | tr '[:upper:]' '[:lower:]')
+  slug=${slug#-}; slug=${slug%-}; slug=$(printf '%s' "$slug" | cut -c1-24)
+  [ -n "$slug" ] || slug=round
+  ts=$(date +%Y%m%d-%H%M%S)
+  hex=$(od -An -N2 -tx1 /dev/urandom 2>/dev/null | tr -d ' \n')
+  [ ${#hex} -eq 4 ] || hex=$(printf '%04x' $((RANDOM % 65536)))
+  dir=".sealed-council/${ts}-${hex}-${slug}"; mkdir -p "$dir"
+  printf '%s\n' "$text" >"$dir/brief.md"; printf '%s\n' "$dir"
+}
+
+cmd_ask() {
+  local repo=0 replace=0 round s seats n=0 adir f
+  while [ $# -gt 0 ]; do case $1 in --repo) repo=1; shift ;; --replace) replace=1; shift ;; *) break ;; esac; done
+  round=${1:-}; shift || true
+  [ -n "$round" ] && [ -f "$round/brief.md" ] || die "ask: need a round with brief.md"
+  if [ -e "$(mapfile "$round")" ] || [ -L "$(mapfile "$round")" ]; then die "ask: already sealed"; fi
+  [ "$(nstr "$PREAMBLE
+
+$(cat "$round/brief.md")")" -le "$MAX" ] || die "prompt exceeds 64 KiB"
+  seats=$(pick_seats "$@")
+  [ -n "$seats" ] || die "ask: no seats"
+  adir=$(ansdir "$round")
+  for s in $seats; do
+    if [ "$replace" -eq 0 ] && [ -f "$adir/${s}.md" ]; then continue; fi
+    ask_one "$s" "$round" "$repo" &
+  done
+  wait
+  for f in "$adir"/*.md; do [ -f "$f" ] && [ -s "$f" ] && n=$((n + 1)); done
+  [ "$n" -ge 2 ]
+}
+
+cmd_seal() {
+  local round=${1:-} adir src=() f seat letters i n dest work map published idx tmp j
+  [ -n "$round" ] && [ -d "$round" ] || die "seal: need a round dir"
+  adir=$(ansdir "$round")
+  for seat in claude codex agent; do
+    f="$adir/${seat}.md"; [ -f "$f" ] && src+=("$f")
+  done
+  n=${#src[@]}
+  [ "$n" -ge 2 ] || die "seal: need at least 2 answers"
+  letters=({A..Z})
+  i=0
+  while [ $i -lt $n ]; do
+    dest="$round/${letters[$i]}.md"; [ -e "$dest" ] || [ -L "$dest" ] && die "$dest already exists"
+    i=$((i + 1))
+  done
+  mkdir -p "$SC_HOME/maps"
+  map=$(mapfile "$round")
+  if [ -e "$map" ] || [ -L "$map" ]; then die "$map already exists"; fi
+  [ -w "$SC_HOME/maps" ] || die "cannot write $map"
+  idx=(); i=0; while [ $i -lt $n ]; do idx+=("$i"); i=$((i + 1)); done
+  i=$((n - 1))
+  while [ $i -gt 0 ]; do
+    j=$((RANDOM % (i + 1)))
+    tmp=${idx[$i]}; idx[$i]=${idx[$j]}; idx[$j]=$tmp
+    i=$((i - 1))
+  done
+  work=$(mktemp -d "${TMPDIR:-/tmp}/sc-anon.XXXXXX") || exit 1
+  published=()
+  seal_die() {
+    rm -rf "$work"
+    if [ ${#published[@]} -gt 0 ]; then rm -f "${published[@]}"; fi
+    echo "sealed-council: $1" >&2
+    exit 1
+  }
+  i=0
+  while [ $i -lt $n ]; do
+    cp "${src[${idx[$i]}]}" "$work/${letters[$i]}.md" || seal_die "copy failed"
+    i=$((i + 1))
+  done
+  {
+    i=0
+    while [ $i -lt $n ]; do
+      printf '%s\t%s\t%s\n' "${letters[$i]}" "$(basename "${src[${idx[$i]}]}" .md)" "$(filehash "$work/${letters[$i]}.md")"
+      i=$((i + 1))
+    done
+  } >"$work/map.tsv" || seal_die "could not write map"
+  i=0
+  while [ $i -lt $n ]; do
+    dest="$round/${letters[$i]}.md"
+    if [ -e "$dest" ] || [ -L "$dest" ]; then seal_die "$dest already exists"; fi
+    if ! mv -n "$work/${letters[$i]}.md" "$dest" || [ -e "$work/${letters[$i]}.md" ] || [ ! -f "$dest" ]; then
+      seal_die "could not publish $dest"
+    fi
+    published+=("$dest"); i=$((i + 1))
+  done
+  if ! mv -n "$work/map.tsv" "$map" || [ -e "$work/map.tsv" ] || [ ! -f "$map" ]; then
+    seal_die "could not write $map"
+  fi
+  chmod 600 "$map"; rm -rf "$work"
+}
+
+rank_one() {
+  local seat=$1 round=$2 body tmp st n dest ranks cwd letter own hash map ex ans err lock
+  map=$(mapfile "$round"); own=; ex=; ans=; err=$(errlog "$round" "$seat")
+  while IFS=$'\t' read -r letter dest hash; do [ "$dest" = "$seat" ] && own=$letter; done <"$map"
+  for dest in "$round"/[A-Z].md; do
+    [ -f "$dest" ] || continue
+    letter=$(basename "$dest" .md)
+    [ "$letter" = "$own" ] && continue
+    [ "$(nbytes "$dest")" -le "$MAX" ] || { fail_seat 1 "$seat" "$err"; return 0; }
+    [ -n "$ex" ] && ex="$ex > "
+    ex="$ex$letter"
+    ans="$ans
+=== $letter ===
+$(cat "$dest")
+"
+  done
+  body="Rank these identity-masked answers. Names hidden. Output one line RANK: $ex (only letters listed) then at most 150 words why. Do not name tools, seats, or vendors.
+
+BRIEF:
+$(cat "$round/brief.md")
+$ans"
+  tmp=$(mktemp "${TMPDIR:-/tmp}/sc.XXXXXX") || return 0
+  cwd=$(mktemp -d "${TMPDIR:-/tmp}/sc-w.XXXXXX") || { rm -f "$tmp"; return 0; }
+  cp "$round/brief.md" "$cwd/brief.md"
+  run_seat "$seat" "$tmp" "$body" "$cwd" "$err"
+  st=$?; rm -rf "$cwd"
+  if [ "$st" -ne 0 ] || [ ! -s "$tmp" ]; then
+    [ "$st" -eq 0 ] && st=1
+    rm -f "$tmp"; fail_seat "$st" "$seat" "$err"; return 0
+  fi
+  ok_rank "$tmp" "$ex" || { rm -f "$tmp"; echo "seat $seat: bad RANK line" >&2; return 0; }
+  lock="$round/.ranklock"
+  while ! mkdir "$lock" 2>/dev/null; do sleep 0; done
+  n=1; dest="$round/rank-$n.md"
+  while [ -e "$dest" ] || [ -L "$dest" ]; do n=$((n + 1)); dest="$round/rank-$n.md"; done
+  ranks=$(rankmap "$round"); mkdir -p "$SC_HOME/maps"
+  if ! printf '%s\t%s\n' "$n" "$seat" >>"$ranks"; then rmdir "$lock"; rm -f "$tmp"; fail_seat 1 "$seat" "$err"; return 0; fi
+  chmod 600 "$ranks"
+  mv "$tmp" "$dest" || { rmdir "$lock"; rm -f "$tmp"; fail_seat 1 "$seat" "$err"; return 0; }
+  rmdir "$lock"
+}
+
+cmd_rank() {
+  local round=${1:-} s seats dest nlet n=0 f
+  shift || true
+  [ -n "$round" ] && [ -f "$round/brief.md" ] || die "rank: need a round"
+  [ -f "$(mapfile "$round")" ] || die "rank: seal first"
+  nlet=0
+  for dest in "$round"/[A-Z].md; do [ -f "$dest" ] && nlet=$((nlet + 1)); done
+  if [ "$nlet" -eq 2 ]; then
+    echo "2 answers: ranking skipped, host compares A and B"
+    return 0
+  fi
+  [ "$nlet" -ge 3 ] || die "rank: need at least 3 answers"
+  for f in "$round"/rank-*.md; do [ -e "$f" ] || [ -L "$f" ] || continue; die "round already ranked"; done
+  rm -f "$(rankmap "$round")"
+  for dest in "$round"/[A-Z].md; do [ -f "$dest" ] && [ "$(nbytes "$dest")" -gt "$MAX" ] && die "prompt exceeds 64 KiB"; done
+  seats=$(pick_seats "$@")
+  [ -n "$seats" ] || die "rank: no seats"
+  for s in $seats; do rank_one "$s" "$round" & done
+  wait
+  ranks=$(rankmap "$round"); [ -f "$ranks" ] || return 1
+  while IFS=$'\t' read -r f s; do
+    dest="$round/rank-$f.md"
+    [ -f "$dest" ] && [ -s "$dest" ] && grep -q '^RANK:' "$dest" && n=$((n + 1))
+  done <"$ranks"
+  [ "$n" -ge 2 ]
+}
+
+cmd_reveal() {
+  local round=${1:-} map ranks letter seat hash now f n
+  [ -n "$round" ] && [ -d "$round" ] || die "reveal: need a round dir"
+  [ -s "$round/verdict.md" ] || die "write verdict.md first"
+  map=$(mapfile "$round"); ranks=$(rankmap "$round")
+  [ -f "$map" ] || die "reveal: no map"
+  while IFS=$'\t' read -r letter seat hash; do
+    [ -n "$letter" ] || continue
+    f="$round/${letter}.md"
+    if [ -f "$f" ]; then now=$(filehash "$f"); else now=; fi
+    if [ "$now" = "$hash" ]; then printf '%s\t%s\tok\n' "$letter" "$seat"; else printf '%s\t%s\tchanged\n' "$letter" "$seat"; fi
+  done <"$map"
+  [ -f "$ranks" ] || return 0
+  while IFS=$'\t' read -r n seat; do
+    [ -f "$round/rank-$n.md" ] || continue
+    mv "$round/rank-$n.md" "$round/rank-${seat}.md"
+    printf 'rank %s:\n' "$seat"; cat "$round/rank-${seat}.md"
+  done <"$ranks"
+}
+
+cmd_status() {
+  local round=${1:-} f
+  [ -n "$round" ] && [ -d "$round" ] || die "status: need a round dir"
+  echo "round $round"; [ -f "$round/brief.md" ] && echo brief
+  for f in "$(ansdir "$round")"/*.md; do [ -f "$f" ] && echo "answer $(basename "$f" .md)"; done
+  for f in "$round"/[A-Z].md; do [ -f "$f" ] && echo "letter $(basename "$f" .md)"; done
+  for f in "$round"/rank-*.md; do [ -f "$f" ] && echo "$(basename "$f")"; done
+  [ -f "$(mapfile "$round")" ] && echo map
+}
+
+[ $# -ge 1 ] || usage
+case $1 in
+  seats) list_seats ;;
+  new) shift; cmd_new "$@" ;;
+  ask) shift; cmd_ask "$@" ;;
+  seal) shift; cmd_seal "$@" ;;
+  rank) shift; cmd_rank "$@" ;;
+  reveal) shift; cmd_reveal "$@" ;;
+  status) shift; cmd_status "$@" ;;
+  *) usage ;;
+esac

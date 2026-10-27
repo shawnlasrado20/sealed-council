@@ -1,0 +1,1 @@
+skills/sealed-council/SKILL.md

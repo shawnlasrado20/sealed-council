@@ -1,0 +1,5 @@
+RANK: C > B
+
+C does what the brief asks. It picks the one option that actually fits a zero-dependency bash tool, and it adds the useful detail of setting a restrictive umask before writing. It also says plainly that 0600 does not stop other processes run by the same user. Its point that the other two options fail that test too is right, and it explains why the problem can't be fully solved at this layer. Its weaknesses are that it probably runs slightly over the 200-word limit, and its closing trust-boundary point repeats what came before.
+
+B picks the passphrase option and then admits that option breaks the zero-dependency rule. It asks the user to relax the constraint, so its recommendation doesn't fit the brief it was given. It leaves out implementation details. It also passes over the practical cost that C points out: you either type the passphrase every time or store it somewhere, which defeats the purpose. B's security warnings are correct and carefully worded, but it is less useful as a decision.

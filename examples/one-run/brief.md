@@ -1,0 +1,1 @@
+A small bash CLI tool must store a private file that other processes run by the same user should not read. Options: (1) chmod 600 in ~/.toolname, (2) macOS Keychain / libsecret, (3) encrypt with a user passphrase. Pick one for a zero-dependency open-source tool and say why, under 200 words.

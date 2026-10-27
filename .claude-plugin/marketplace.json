@@ -1,0 +1,20 @@
+{
+  "name": "sealed-council",
+  "description": "Claude Code, Codex and Cursor answer the same question alone, then rank each other's answers with the names hidden.",
+  "owner": {
+    "name": "shawnlasrado20"
+  },
+  "plugins": [
+    {
+      "name": "sealed-council",
+      "source": "./",
+      "description": "Claude Code, Codex and Cursor answer the same question alone, then rank each other's answers with the names hidden.",
+      "relevance": {
+        "topic": "a second opinion from other agents",
+        "signals": {
+          "cli": ["codex", "agent", "cursor-agent"]
+        }
+      }
+    }
+  ]
+}

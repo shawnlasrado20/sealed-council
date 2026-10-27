@@ -1,0 +1,15 @@
+{
+  "name": "sealed-council",
+  "version": "0.1.0",
+  "description": "Claude Code, Codex and Cursor answer the same question alone, then rank each other's answers with the names hidden.",
+  "author": {
+    "name": "shawnlasrado20"
+  },
+  "license": "MIT",
+  "keywords": [
+    "llm-council",
+    "second-opinion",
+    "code-review",
+    "agent-skills"
+  ]
+}
