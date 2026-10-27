@@ -13,6 +13,8 @@ Your agents mark the papers, not the names. Identity-masked (names hidden).
 
 You are the **host**. Drive the CLI; do not pretend to be a seat.
 
+The CLI is `sealed-council`. If it is not on PATH and this skill came from the Claude Code plugin, run `bin/sealed-council` from the plugin root (two folders above this file) instead. If neither exists, tell the user to clone the repo and run `./install.sh`.
+
 ## Before you start
 
 1. Count installed seats (`sealed-council seats`). Tell the user the call count **before** asking: up to **2 CLI runs per seat** (each run may make several model calls on their plan). Worst case ~2× `SC_TIMEOUT` wall time (default 600s).
