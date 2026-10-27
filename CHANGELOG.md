@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0 - unreleased
+## 0.1.0 - 2026-10-27
 
 - Ask installed `claude`, `codex`, and Cursor `agent` the same question in separate processes, locally, with no API key.
 - Seal answers as A/B/C; the sha256 map lives under `$SC_HOME`; a seat never ranks its own letter.
