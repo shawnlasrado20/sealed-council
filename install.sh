@@ -63,7 +63,8 @@ uninstall_one() {
   fi
 }
 
-[ -f "$ROOT/SKILL.md" ] || die "SKILL.md missing"
+SKILL_SRC="$ROOT/skills/sealed-council"
+[ -f "$SKILL_SRC/SKILL.md" ] || die "SKILL.md missing"
 [ -x "$BIN_SRC" ] || die "missing executable $BIN_SRC"
 
 case ${1:-} in
@@ -82,11 +83,11 @@ case ${1:-} in
       [ -e "$dest" ] && return 1
       return 0
     }
-    can_link "$ROOT" "$CLAUDE_DEST" || die "refuse to overwrite $CLAUDE_DEST"
-    can_link "$ROOT" "$AGENTS_DEST" || die "refuse to overwrite $AGENTS_DEST"
+    can_link "$SKILL_SRC" "$CLAUDE_DEST" || die "refuse to overwrite $CLAUDE_DEST"
+    can_link "$SKILL_SRC" "$AGENTS_DEST" || die "refuse to overwrite $AGENTS_DEST"
     can_link "$BIN_SRC" "$BIN_DEST" || die "refuse to overwrite $BIN_DEST"
-    link_in "$ROOT" "$CLAUDE_DEST"
-    link_in "$ROOT" "$AGENTS_DEST"
+    link_in "$SKILL_SRC" "$CLAUDE_DEST"
+    link_in "$SKILL_SRC" "$AGENTS_DEST"
     link_in "$BIN_SRC" "$BIN_DEST"
     echo "CLI: $BIN_DEST  (put ~/.local/bin on PATH if needed)"
     ;;
