@@ -1,0 +1,2 @@
+WINNER: 2
+Answer 2 explains the index scan correctly and includes useful operational caveats, while Answer 1 incorrectly describes seeking to the cutoff and overpromises performance; both exceed the 300-word limit.

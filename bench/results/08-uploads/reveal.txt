@@ -1,0 +1,24 @@
+A	claude	ok
+B	codex	ok
+C	agent	ok
+rank claude:
+RANK: C > B
+
+Both have the same core design: direct upload to object storage with a signed URL, an asynchronous queue worker, polling for status, retries, a dead-letter queue, idempotency and cleanup. C ranks higher because a team of two could build it straight from the page. It gives a concrete key layout, a clear status enum, an allowed-type list, a specific retry count, and a scan for jobs stuck in processing. It also lets users retry processing without re-uploading, which is a real usability gain that B lacks. C states the minimal footprint plainly: one bucket, one queue, one worker.
+
+B is careful but more generic, with phrases like "where supported" and "appropriate access controls" that leave decisions open. Its strongest point is naming decompression bombs as the main risk and checking the real file format. C also caps pixels, so that advantage is small. C has a minor inconsistency: it returns "processing" right after upload while also defining an "uploading" state. Its "decode in chunks" claim is vague. Both answers run slightly over 300 words.
+rank codex:
+RANK: C > A
+
+C is more complete operationally: it limits decoded pixels, detects stuck processing, checks uploaded metadata, and allows processing retries without another upload. Its concrete status model and small deployment fit a two-person team.
+
+A also addresses the core memory problem and adds useful privacy handling, cleanup, and alerting. However, it offers too many infrastructure alternatives and misses an explicit decoded-pixel limit—a compressed file’s byte size does not bound memory use.
+
+Both exceed the 300-word limit and overstate size enforcement through signed upload rules; the chosen upload mechanism must actually support those constraints. Both should explicitly require ownership checks and private originals.
+
+Not checked: implementation behavior. Main risk: insufficient upload validation or decoded-image limits can still cause abuse or memory exhaustion.rank agent:
+RANK: B > A
+
+B makes the same core move (direct upload, async resize, small bounded workers) with better judgment for two people. It authenticates the grant, re-checks stored size, uses a real status machine, writes every derivative before `ready`, and names the leftover OOM trap: a 25 MB file can decode to a huge bitmap, so pixel caps and sequential single-image work matter more than swapping libraries. Failures keep originals for retry, reject poison files, and sweep abandoned work. Tradeoffs are explicit.
+
+A is a solid operational recipe (privacy strip, dual completion trigger, lifecycle, poll cadence) but a thinner state model, stores URLs instead of keys, and underplays decode bombs. Extra cataloging does not beat B’s constraints and consistency.

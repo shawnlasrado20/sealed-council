@@ -1,0 +1,2 @@
+WINNER: 1
+Answer 1 is safer: Answer 2’s seven-backup floor can still delete every backup when more than seven exist, miscounts filenames containing newlines, and incorrectly describes unmatched globs; both exceed 300 words and leave filesystem race risks unaddressed.

@@ -1,0 +1,10 @@
+Use a **Postgres transactional outbox and a background delivery worker** in the existing Node.js deployment. Promise **at-least-once delivery**; duplicates are unavoidable when a customer processes a request but its response gets lost.
+
+- **Storage:** In the same transaction as the business change, insert an immutable event and its intended deliveries. Each delivery stores an event ID, endpoint ID, per-endpoint sequence, status, attempt count, next-attempt time, lease expiry, and last error. Index pending deliveries by due time. Persist attempt history with bounded retention. Size capacity by deliveries: one event sent to 300 endpoints means 300 requests.
+- **Dispatch:** Claim due deliveries using `FOR UPDATE SKIP LOCKED` and a renewable lease; commit before making HTTP calls. Expired leases recover work after crashes. Use bounded global concurrency, one active request per endpoint, and a request timeout. Record success only after a 2xx response.
+- **Retries:** Retry network failures, timeouts, 408, 429, and 5xx with exponential backoff and jitter; honor bounded `Retry-After`. Treat other 4xx responses as terminal failures. After 72 hours, move failures to a dead-letter state with an operator replay action.
+- **Ordering:** Process each endpoint’s sequence serially, including retries. This deliberately blocks later events behind failures. After terminal failure, advance and expose the gap for replay. No ordering across endpoints.
+- **Idempotency:** Keep the same event ID and payload across retries and replays. Ask receivers to atomically store that ID with their business changes under a unique constraint. Sign requests with HMAC and a fresh attempt timestamp.
+- **Monitor:** Oldest pending age, delivery latency, queue depth, success/retry/dead-letter rates, expired leases, and endpoint-specific failures.
+
+Skipped: Kafka, Redis queues, microservices, and multi-region delivery. Risk: strict endpoint ordering creates head-of-line delays; receiver cooperation is required to prevent duplicate effects.

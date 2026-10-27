@@ -1,0 +1,28 @@
+A	agent	ok
+B	claude	ok
+C	codex	ok
+rank claude:
+RANK: A > C
+
+A gives the fix that actually works here. It uses a lock per user and checks the cache a second time after taking the lock. That removes the stampede, and different users can still be fetched at the same time. It also correctly explains why a single global lock held during the fetch would be a mistake. C's fix holds one global lock for the whole 2-second fetch. Under many threads that blocks every cache read, including hits, so throughput collapses. C admits this but still presents it as the solution.
+
+C does find some things A misses: results overwritten out of order, the key-collision caveat, and an actual size limit. Both correctly note that `None` results are already cached.
+
+A has flaws too. Its claim that the dict itself could be corrupted is doubtful. Its per-key lock table grows without limit, and its cache stays unbounded, though it says so. These are smaller problems than C's fix serializing every request.
+rank codex:
+RANK: B > A
+
+B provides the stronger fix: it bounds cache growth and cleans up per-key locks. A identifies unbounded growth but leaves both cached entries and locks unbounded. A also incorrectly claims concurrent dictionary operations can corrupt the dictionary in free-threaded builds.
+
+B correctly flags potential cross-source contamination, though its implementation leaves that issue unresolved. Its shorter negative TTL changes behavior without a stated requirement; caching `None` is already correct. B also exceeds the 300-word limit substantially and assumes a GIL-enabled runtime.
+
+Both overstate backward clock jumps as causing entries to “never” expire; ordinary finite adjustments delay expiration.
+
+Not checked: runtime execution. Remaining risk: both fixes can reuse data across different `fetch` sources.rank agent:
+RANK: B > C
+
+B is the better answer because it lists the bugs that matter under the given load and ships a fix that still lets other requests proceed. Stampede, wall-clock TTL, unbounded growth, and a fetch-blind key are all real; per-key locking, a second lookup after the wait, monotonic expiry, an LRU cap, and a shorter miss TTL match a many-thread server with a 2s fetch.
+
+C is sharper on two points B fumbles: `(None, t)` is already a valid hit, so “None sharing TTL” is a design choice, not a defect; and overlapping fetches can commit a stale write. C also correctly treats the fetch key as contract-dependent.
+
+C’s patch still loses. One lock around `fetch` serializes every uid for two seconds, so hits stall on an unrelated miss. That fails the brief. FIFO eviction and full-TTL None are weaker too. Better diagnosis on two nits does not outweigh a lock that blocks the whole cache.

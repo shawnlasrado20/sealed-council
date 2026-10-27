@@ -1,0 +1,5 @@
+RANK: A > C
+
+A is the better launch plan. It picks one price from the brief, treats the 12 “I’ll pay” signals as a hypothesis, and tests with a real checkout plus a kill rule: four purchases in seven days. It also tracks the right follow-ups—completed docs, use in more than one week, second-month renewal, and processing cost—so a burst of first-month buys that then cancel is not mistaken for a business. Other prices are gated on evidence: one-time only if use is occasional and ongoing cost is covered; team only after shared workflows and a company budget show up; usage-based only after costs actually vary.
+
+C is more ambitious and less disciplined. It invents prices and a yearly option the brief did not offer, then contradicts itself by surveying willingness to pay before setting a price while also sending a checkout the same week. “Too cheap / toy” is asserted, not measured. A team workspace, branding, and watermarks assume a product shape this CLI has not earned, and an A/B on hundreds of free users will be noise. The anti–one-time and anti–usage-based instincts are fair, but they do not make up for overbuilding and a muddled first test.

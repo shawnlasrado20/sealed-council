@@ -1,0 +1,2 @@
+WINNER: 1
+Both fix the main bugs, but Answer 1 adds response validation, safer retry-delay parsing, and correct relative-link resolution after redirects.

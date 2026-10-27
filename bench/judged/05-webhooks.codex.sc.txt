@@ -1,0 +1,2 @@
+WINNER: 2
+Answer 2 better handles crash recovery with committed leases, bounds concurrency, and clarifies customer deduplication, though both exceed the 300-word limit.

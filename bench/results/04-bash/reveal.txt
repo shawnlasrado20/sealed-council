@@ -1,0 +1,26 @@
+A	claude	ok
+B	agent	ok
+C	codex	ok
+rank claude:
+RANK: C > B
+
+C's safe version is the stronger one. It enforces what B only recommends: it requires exactly one absolute directory argument, uses `cd -P --`, refuses `/`, sets nullglob, skips symlinks and non-regular files, and uses plain `rm --` with no `-r`. It also covers risks B misses: overlapping cron runs, clock skew and future timestamps, the cron PATH/environment, and the race between checking a file and deleting it.
+
+B is tidier, and its `find -maxdepth 1 -type f -mtime +30 -delete` one-liner is idiomatic. It also makes the best practical point of either answer: keep the newest N copies so a stalled backup job doesn't lead to every archive being deleted. But B gets `-mtime +30` wrong: it calls it "strictly older than 30×24h", when it actually means 31 or more whole days. It accepts relative paths despite advising against them, and `find --` isn't portable.
+
+Both answers likely go over the 300-word limit, C by a bit more. Its inclusion of hidden files also quietly changes what the script does.
+rank codex:
+RANK: A > B
+
+A is more accurate and offers stronger safeguards, including an absolute-path requirement and a lock. But its “keep seven” protection is broken: eight old backups pass the count check and all eight are deleted. Counting newline-delimited filenames is unreliable, and A substantially exceeds the 300-word limit.
+
+B falsely claims recursive removal follows a symlink into its target directory. Its age expression selects files at least 31 days old, contrary to its explanation, and its code neither enforces absolute paths nor implements a retention floor.
+
+Both incorrectly describe unmatched-glob behavior: the listing command normally errors and produces no loop entries. Both overstate which failures forced removal suppresses.
+
+Not checked: execution under cron. Risk: neither version guarantees retaining recoverable backups.rank agent:
+RANK: A > C
+
+A names the high-impact failures with outcomes: empty or failed directory change deleting in the wrong place, splitting, listing parse errors, option-like names, recursive delete, and ignored errors. The rewrite actually blocks those: absolute directory, no directory change, regular files only, a minimum backup count, a run lock, and a deletion record. That is the right bar for nightly irreversible cleanup.
+
+C is denser and nearer the length cap, and adds hidden names, clocks, links, and environment. Its rewrite is careful with option parsing, links, and refusing the root directory. It still can delete every backup if new ones stop, and concurrent runs are only warned about. Safer policy belongs in the script. A’s extra length is the main flaw.

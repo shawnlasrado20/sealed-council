@@ -1,0 +1,2 @@
+WINNER: 1
+Both give the right index, but Answer 1 correctly explains scanning newest-first and includes key build and partial-index caveats; Answer 2 misstates the scan’s starting point and overpromises millisecond performance.

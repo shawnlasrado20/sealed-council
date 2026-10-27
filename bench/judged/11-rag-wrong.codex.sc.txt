@@ -1,0 +1,2 @@
+WINNER: 2
+It better isolates retrieval versus generation with expert-chosen evidence and evaluates correctness, currency, and abstention together, though both answers exceed the 300-word limit.

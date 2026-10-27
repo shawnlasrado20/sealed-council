@@ -1,0 +1,3 @@
+WINNER: 1
+
+Answer 1 rules out the tempting false bug: `(None, ts)` is truthy, so cached `None` counts as a hit. It also catches out-of-order stale overwrites and explains why a single global lock would be the wrong fix, while Answer 2 lists a design choice as a bug and quietly changes behavior with `neg_ttl`.

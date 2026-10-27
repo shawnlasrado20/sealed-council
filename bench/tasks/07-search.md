@@ -1,0 +1,1 @@
+Design question. A notes app has 200k users and 50M notes in Postgres. Users want full-text search over their own notes, results under 300 ms, and "semantic" search later. The team is 3 engineers. Should they use Postgres full-text search, pgvector, Elasticsearch/OpenSearch, or a hosted search service? Recommend one path for now and later. Answer in at most 300 words.

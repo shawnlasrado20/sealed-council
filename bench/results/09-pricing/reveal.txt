@@ -1,0 +1,27 @@
+A	codex	ok
+B	agent	ok
+C	claude	ok
+rank claude:
+RANK: B > A
+
+B is more concrete and more decisive, which is what the brief asked for. It commits to one offer and spells out a sequence of tests with clear pass and fail thresholds. Two details make it more useful in practice: it judges the split test on cash collected rather than signups, and it handles hosted processing costs with a usage cap. It also gives a clear signal for when to add the team plan. Its weaknesses: it states some guesses as fact (for example, that a monthly plan "trains them to cancel"), its 50-user, two-week split is too small to be reliable, and it seems to run slightly over the 300-word limit.
+
+A is careful and honest about uncertainty. Its points that the decision rule is not statistically reliable, and that 12 buyers at $8 is only $96 a month, are good. But it hedges too much. Its recommended price makes little money, and its main test only checks the 12 interested users without comparing prices. As a result it is less useful for actually deciding on a price.
+rank agent:
+RANK: A > C
+
+A is the better launch plan. It picks one price from the brief, treats the 12 “I’ll pay” signals as a hypothesis, and tests with a real checkout plus a kill rule: four purchases in seven days. It also tracks the right follow-ups—completed docs, use in more than one week, second-month renewal, and processing cost—so a burst of first-month buys that then cancel is not mistaken for a business. Other prices are gated on evidence: one-time only if use is occasional and ongoing cost is covered; team only after shared workflows and a company budget show up; usage-based only after costs actually vary.
+
+C is more ambitious and less disciplined. It invents prices and a yearly option the brief did not offer, then contradicts itself by surveying willingness to pay before setting a price while also sending a checkout the same week. “Too cheap / toy” is asserted, not measured. A team workspace, branding, and watermarks assume a product shape this CLI has not earned, and an A/B on hundreds of free users will be noise. The anti–one-time and anti–usage-based instincts are fair, but they do not make up for overbuilding and a muddled first test.
+rank codex:
+RANK: B > C
+
+B makes a concrete choice from the offered options, prioritizes actual purchases, and delays additional packaging until demand appears. It also considers ongoing processing costs.
+
+Its weaknesses matter: assumptions about cancellation are unsupported, low conversion cannot identify packaging or trust as the cause, and two-week cash collected unfairly favors upfront payment over recurring revenue. An unlimited add-on also fails to bound costs.
+
+C introduces unrequested prices and collaboration features, then contradicts its launch recommendation by suggesting those features should wait. Asking hypothetical willingness to pay adds less evidence than requesting payment. Claims that low prices signal poor quality and one-time payments undermine sustainability are too categorical.
+
+Neither establishes usage frequency or delivery costs, which could change the recommendation.
+
+Not checked: actual buyer behavior or costs. Risk: B’s proposed test could select an unsustainable price.

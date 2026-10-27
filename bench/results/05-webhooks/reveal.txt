@@ -1,0 +1,31 @@
+A	codex	ok
+B	agent	ok
+C	claude	ok
+rank claude:
+RANK: A > B
+
+Both pick the same correct core: a Postgres outbox in the same transaction, row claiming with `SKIP LOCKED` plus leases, at-least-once delivery, FIFO per endpoint, and backoff with jitter. A wins narrowly on the failure modes that actually cause missed and duplicated webhooks:
+
+- It commits the claim before the HTTP call.
+- It recovers crashed sends through expiring leases.
+- It says what happens to the ordering sequence after a terminal failure: advance and expose the gap.
+- It names the head-of-line blocking trade-off.
+- It tells receivers to store the event ID atomically with their own changes.
+- It adds a signing timestamp against replay, plus 408 and `Retry-After` handling.
+
+B is more concrete and pragmatic. It gives a real schema, a unique constraint that stops double enqueueing, specific backoff steps, and a sensible pause-and-alert per endpoint that A lacks. But B never says how ordering behaves once a delivery goes dead. Its "do not build" list is stronger, while A commits to an operator replay feature. Both run slightly over the 300-word limit.
+rank codex:
+RANK: C > B
+
+C makes the better scope decision: explicitly decline ordering and provide resource versions so consumers can reject stale updates. Its retry window, request timeout, and worker heartbeat also make operations clearer.
+
+B promises FIFO without implementing it: one in-flight request per endpoint prevents concurrency, but later events can overtake an earlier event waiting for retry. Its lease recovery is also unspecified, so crashed deliveries could remain stuck.
+
+Both correctly choose transactional persistence, stable event IDs, uniqueness constraints, and at-least-once delivery. C still needs durable claim recovery, should avoid repeatedly retrying permanent client errors, and overreaches with a customer-facing resend interface.
+
+Not checked: implementation behavior. Main risk: neither fully specifies recovery after a worker crashes.rank agent:
+RANK: A > C
+
+A is stronger because it specifies a full claim loop: lock due rows, commit, then HTTP, and recover via lease expiry. That is what stops lost work after crashes without holding a transaction open during the request. It also bounds concurrency, allows one in-flight call per endpoint, treats most 4xx as terminal, honors retry-after, and sizes load by fan-out rather than by event count. At-least-once plus a stable event id, signed attempts, and receiver-side dedupe are stated clearly.
+
+C has the same outbox shape, a better instinct not to build per-endpoint FIFO yet, and a useful customer resend log. It is weaker where it matters operationally: it retries non-retryable 4xx, assumes tiny throughput without fan-out, and never says to release the row before the HTTP call. A’s strict endpoint ordering adds head-of-line risk, but the delivery mechanics still outrank C.

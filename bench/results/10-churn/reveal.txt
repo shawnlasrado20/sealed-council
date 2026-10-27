@@ -1,0 +1,26 @@
+A	agent	ok
+B	codex	ok
+C	claude	ok
+rank claude:
+RANK: B > A
+
+B is the stronger analysis. It keeps price fixed in the first-box test, so the convenience effect isn't confounded with a cheaper offer. It ties "food went bad" to box size, which addresses spoilage without a separate freshness project. B's main measure for the right-sizing test is 90-day contribution margin per acquired customer. It also warns that skips can just push churn later. Its rigor points are sound: separate or factorial randomization, a sample size set in advance, and following cohorts long enough.
+
+A is tighter and well organized. It makes good use of the 18% vs 9% gap and clearly explains why spoilage comes later. But it changes several things at once in the first box, and 4 to 6 weeks may be too short to see later churn. It also never flags that skips can hide churn.
+
+B probably goes past the 300-word limit, which counts against it. Its better measurement thinking still outweighs A's conciseness.
+rank codex:
+RANK: A > C
+
+A wins on the explicit 300-word limit and offers two practical tests focused on early retention, with margin checks and sensible cautions against blanket discounts. Its weaknesses: the second test bundles several changes, skip rates can disguise delayed cancellation, and 4–6 weeks is short for assessing durable retention.
+
+C has the stronger measurement design: separate experiments or a factorial design, sample-size planning, longer follow-up, and contribution margin per customer. But it substantially exceeds the word limit. Its claim that a smaller plan “covers 55%” also mistakes survey categories for proven causal effects.
+
+Both overinterpret the comparison between first-box loss and subsequent monthly churn: those periods and populations are not directly comparable.
+
+Not checked: actual customer behavior or experiment feasibility; survey explanations remain hypotheses.rank agent:
+RANK: B > C
+
+B isolates two bets and pairs each with the right outcome. The first-box test holds price fixed so convenience is not mixed with a discount, and uses paid second-box retention against the 82% baseline. The second treats expense and waste as a fit problem, with 90-day contribution margin as primary so extra retention cannot hide worse economics. It also separates skips from cancels and checks whether churn merely shifts later.
+
+C has similar ideas but weaker isolation: the smaller plan is also cheaper, offered at signup and cancel, and justified as covering 55% of survey mentions—while later saying not to trust those surveys. Its primary is a bundle of retention and margin, so a win is harder to call. Channel splits and sample size do not offset that.

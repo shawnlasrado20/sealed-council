@@ -1,0 +1,30 @@
+A	codex	ok
+B	agent	ok
+C	claude	ok
+rank claude:
+RANK: A > B
+
+The two answers are close. Both pick shared tables with row-level policies and give sound reasons. A is ahead on how isolation is enforced:
+- It forces the policies even for the table owner.
+- It builds the tenant into foreign keys and unique constraints, so references cannot cross tenants.
+- It denies access by default when no tenant is set.
+- It covers background workers, exports, caches, file storage and search indexes. These are common places for data to leak between tenants, and B skips them.
+- It says plainly what the policies cannot protect against.
+- For the prospect, it asks what "data isolation" means before promising anything. That is the right first move.
+
+B is more concrete. It shows an actual policy and how the tenant is set per transaction. Its advice to give only that one customer a dedicated instance is a sharp, practical answer. Its triggers for changing course are also richer: per-tenant point-in-time restore, incompatible schemas, and moving only the largest tenants out. But "logical isolation is real isolation" is an overconfident sales line. It also likely goes over the 300-word limit and is thinner on enforcement.
+rank codex:
+RANK: C > B
+
+C edges ahead by addressing composite foreign keys, which prevent cross-tenant references, separating privileged administration, and first clarifying what the prospect means by isolation. Both recommend a sensible shared-table default with selective dedicated deployments.
+
+B better explains trusted tenant selection, transaction-scoped context, and write policies. However, its claim that physical separation merely hides a missing tenant filter is misleading: separate databases with appropriately restricted credentials can contain that failure.
+
+Both overstate what row counts establish about capacity and how categorically one architecture provides isolation. Workload, credentials, operational controls, and contractual requirements matter. Both exceed the requested 300 words.
+
+Skipped external verification; the main remaining risk is whether tenant context and privileged access are correctly controlled.rank agent:
+RANK: A > C
+
+Both pick shared tables plus database-enforced row filters, reject schema-per-tenant, and treat “data isolation” as a question rather than a slogan. A is stronger because isolation is a system property: tenant comes from membership not a request field, missing context denies access, writes and joins are covered, workers/exports/caches/storage/search are in scope, and the limit of a fully compromised app is stated. Change-of-mind criteria also distinguish a separate database from dedicated machines.
+
+C is more cookbook-concrete (key column order, transaction-local context, a paid dedicated path with the same schema) and lists more triggers to switch. It is weaker where it overclaims capacity, tests only cross-tenant reads, and treats the enterprise ask as a questionnaire to satisfy. A is the answer I would ship.

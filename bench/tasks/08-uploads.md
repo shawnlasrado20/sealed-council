@@ -1,0 +1,1 @@
+Design question. A photo-sharing web app lets users upload images up to 25 MB. Uploads currently go through the API server, which resizes them into 3 sizes before responding; the server runs out of memory at peak. Propose a better upload and processing design (storage, resizing, status to the client, failure handling) for a team of 2. Answer in at most 300 words.

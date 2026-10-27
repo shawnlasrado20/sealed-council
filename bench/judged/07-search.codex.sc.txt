@@ -1,0 +1,2 @@
+WINNER: 2
+It better addresses skew, latency validation, and a practical hosted-service fallback without promising unverified performance, though both answers exceed the 300-word limit.

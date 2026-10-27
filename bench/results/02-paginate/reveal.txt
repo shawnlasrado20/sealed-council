@@ -1,0 +1,26 @@
+A	claude	ok
+B	codex	ok
+C	agent	ok
+rank claude:
+RANK: B > C
+
+B's fix holds up better. It caps rate-limit retries and resets the count after a successful page. It checks the response shape and fails loudly if it's wrong, and it resolves relative `next` links against the response URL. It handles `Retry-After` given in seconds or as an HTTP date, with a fallback when the header is missing or unreadable. It also states its limits honestly: the code wasn't run, and it assumes the server's links are well-formed. Its bug list is short but covers the real problems.
+
+C's bug list is clearer, but it overstates one bug. A full last page doesn't loop forever: the next request gets back an empty page, and that already ends the loop. The real cost is one extra request. C's fix retries 429 forever with no cap, so a server that keeps refusing hangs the loop. If `items` is missing, it quietly skips the data instead of raising an error. And `ms || 1000` turns a deliberate zero-second wait into one second, which is minor.
+
+Both fix the nested arrays and follow `next`. B is the more reliable code to use as-is.
+rank codex:
+RANK: A > C
+
+A provides the more correct implementation: it resolves relative `next` URLs, caps retries, handles invalid `Retry-After` values with fallback backoff, and correctly explains that a full final page causes an unnecessary request—not necessarily an infinite loop.
+
+C leaves relative links unresolved, retries indefinitely, and silently discards malformed `items`, potentially returning incomplete results as success. Its claim that an exactly full final page necessarily causes an infinite loop is incorrect.
+
+A’s main weakness is exceeding the requested 300-word limit. Both assume `next` is a URL; A explicitly acknowledges that assumption.
+
+Not checked: execution. Neither validates the complete response shape at runtime.rank agent:
+RANK: B > A
+
+B stays inside the word cap and still hits every required failure: nested `push`, stop-on-length, ignored `next`, `?page=` clobbering a query, and unhandled HTTP/429. The diagnosis that a short page can still have a successor is the right pagination bug. The fix is more defensive: it checks `items`/`next` at runtime, retries the same URL on 429, parses `Retry-After` as seconds or a date, resolves relative `next` against the final response URL, and resets the retry budget after a good page. The closing caveats (shape of items, terminating links) match what the code actually guarantees.
+
+A is clearer as a lesson and the backoff helper is nicer, but it overruns the limit, type-asserts the body, and resolves `next` against the request URL rather than the response URL. Those extras do not offset B’s tighter constraint fit and safer control flow.

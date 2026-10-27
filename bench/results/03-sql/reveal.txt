@@ -1,0 +1,26 @@
+A	claude	ok
+B	codex	ok
+C	agent	ok
+rank claude:
+RANK: C > B
+
+Both answers give the same correct fix: an expression index on `(lower(email), created_at DESC)`, built with `CONCURRENTLY`. Both also rightly reject a rolling partial index because `now()` is not immutable, and both note that a backward scan would work too.
+
+C ranks higher because it explains more of the "why." It says what each existing index does wrong: the raw `email` index can't be used for `lower(email)`, and the `created_at` index may have to walk a large 7-day window before it finds 20 matches. That diagnosis is what makes the fix convincing. C also explains how the index is read from left to right and how `LIMIT` lets the scan stop early. Its suggested follow-up, storing email already lowercased or using `citext`, is a useful long-term option.
+
+B has better operational caveats: run `CONCURRENTLY` outside a transaction block, check with `EXPLAIN (ANALYZE, BUFFERS)`, and expect extra write and disk cost. Those are valuable, but they don't make up for its thinner explanation of why the current plan is slow.
+rank codex:
+RANK: C > A
+
+C gives the correct composite expression index and clearly explains equality filtering, timestamp range scanning, ordered output, and early termination. It also correctly warns against a rolling partial index using `now()` and notes that an ascending timestamp index can work through a backward scan.
+
+A proposes the same correct index but exceeds the 300-word limit. Its scan description incorrectly suggests seeking to the cutoff and then walking newest-first. It also overpromises milliseconds and roughly 20 heap fetches; visibility checks, dead tuples, caching, and workload can affect actual performance.
+
+Not checked: execution plans or measured performance. Both answers’ optional email-storage changes require corresponding query changes.rank agent:
+RANK: B > A
+
+Both prescribe the same correct index: `(lower(email), created_at DESC)` with a concurrent build, matching the `lower(email)` equality that the existing `email` btree cannot serve.
+
+B is more accurate on access path: seek to that email’s slice, walk newest-first, apply the 7-day bound, stop at 20. A’s “seek to `(lower_email, now()-7 days)`” starts at the wrong end of a DESC key and would not yield newest-first without extra work. B also states two operational facts A misses: `CONCURRENTLY` cannot run inside a transaction, and a rolling partial index on `now()` is illegal because predicates must be immutable. The backward-scan note is correct.
+
+A is stronger on pedagogy (why the raw `email` index is unused, `ANALYZE`, dropping a redundant btree, normalizing case, covering index not worth 20 heap fetches), but those extras do not offset the scan-start error.

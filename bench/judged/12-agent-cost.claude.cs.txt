@@ -1,0 +1,3 @@
+WINNER: 1
+
+Answer 1 covers the same cost levers but handles the trade-offs more carefully: it measures cost per successful task first and checks each change against completion rate, it escalates to the stronger model automatically when checks fail, and it ends with a frank reality check on pricing. Answer 2 offers an unsupported "40 to 60%" savings figure and doesn't weigh the trade-offs as carefully.

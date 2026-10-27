@@ -1,0 +1,1 @@
+AI product question. An AI coding-agent product charges 20 USD/month. The average user runs 30 tasks a month and each task costs about 1.10 USD in LLM calls (long contexts, many tool calls, retries). The company loses money on active users. What would you change, in priority order, to make the unit economics work without making the product worse? Answer in at most 300 words.

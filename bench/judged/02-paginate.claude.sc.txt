@@ -1,0 +1,3 @@
+WINNER: 2
+
+Both answers find the same five bugs, but Answer 2 explains the exactly-50-items case more accurately, validates the response shape, resets the retry counter on each page, and resolves relative `next` links against `res.url` so redirects are handled; it does all this without being noticeably longer.

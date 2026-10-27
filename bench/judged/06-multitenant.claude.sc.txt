@@ -1,0 +1,3 @@
+WINNER: 2
+
+Answer 2 is the more correct and complete one on isolation: it adds `WITH CHECK` policies, denies access when no tenant is set, takes the tenant from the authenticated session rather than the client, extends tenant scoping to workers, caches, storage and search, and states plainly that RLS won't stop a compromised app. It also gives the enterprise prospect a concrete list of what "data isolation" might mean. Both answers appear to run past the 300-word limit.

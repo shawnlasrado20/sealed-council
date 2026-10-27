@@ -1,0 +1,3 @@
+WINNER: 2
+
+Answer 2 is more accurate and its safe version is stronger. Answer 1 wrongly says the loop gets the literal `*.tar.gz` string when nothing matches; in fact `ls` prints nothing to stdout, so the loop just doesn't run. Answer 1's count floor also doesn't really protect anything: if there are more than 7 files, it can still delete every backup. Answer 2 checks that a recent backup exists, refuses to run on `/`, and also flags `CDPATH`.

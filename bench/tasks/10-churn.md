@@ -1,0 +1,1 @@
+Product question. A meal-kit subscription loses 18% of new customers after the first box, and 9% a month after that. Exit surveys say "too expensive" (40%), "too much cooking" (30%), "food went bad" (15%). Which 2 changes would you test first, how would you measure them, and what would you avoid? Answer in at most 300 words.

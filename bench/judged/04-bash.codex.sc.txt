@@ -1,0 +1,2 @@
+WINNER: 2
+Answer 2 correctly explains unmatched globs and provides a better deletion safeguard; Answer 1’s claimed seven-backup floor can still delete every backup, though both answers exceed 300 words.

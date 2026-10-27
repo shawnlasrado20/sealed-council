@@ -1,0 +1,2 @@
+WINNER: 2
+Answer 2 adds response validation, resolves relative links correctly after redirects, and handles invalid retry delays more safely, though both exceed the 300-word limit.

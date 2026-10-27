@@ -1,0 +1,3 @@
+WINNER: 1
+
+Both answers make the same core recommendation, but Answer 1 ranks all four options clearly, adds safeguards Answer 2 leaves out (planning for the largest accounts, measuring 300 ms as end-to-end p95, syncing deletes) and avoids Answer 2's untested claim that heavy users "should come in well under 300 ms," though it runs further over the 300-word limit.

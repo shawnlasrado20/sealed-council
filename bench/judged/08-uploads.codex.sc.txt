@@ -1,0 +1,2 @@
+WINNER: 2
+Answer 2 is more accurate about presigned upload limits and better addresses decompression bombs, authorization, and stuck jobs, though both exceed the 300-word limit.

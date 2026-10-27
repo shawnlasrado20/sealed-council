@@ -65,7 +65,9 @@ Two live rounds, kept in full (brief, sealed answers, ranks, verdict):
 - [`examples/pr-review`](examples/pr-review): refund endpoint review. All three said BLOCK; ranks A > C > B; the answer with the most code ranked last.
 - [`examples/one-run`](examples/one-run): how a zero-dep bash CLI should store a private file. Two seats agreed, one dissented.
 
-A repeatable 12-task benchmark is planned for the next release.
+## Benchmark
+
+12 tasks (code review, system design, product, AI product), one agent alone vs the council, judged blind by a fresh Claude and a fresh Codex in both answer orders: **council 12, single 0** (46 of 48 votes). The council sees the single answer and costs about 7 agent calls instead of 1, and the judges are AI, not people. Tasks, every answer, the method and those caveats are in [`bench/`](bench/README.md).
 
 ## Limits
 

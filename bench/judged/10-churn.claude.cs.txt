@@ -1,0 +1,3 @@
+WINNER: 1
+
+Both answers pick nearly the same two tests and the same things to avoid, but Answer 1 does it more tightly and closer to the 300-word limit, while Answer 2 runs well past it. Answer 1 also adds two useful design points: it keeps the price fixed so the convenience test isn't mixed up with a discount, and it tracks skips separately so a delayed cancellation doesn't count as a save.

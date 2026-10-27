@@ -1,0 +1,3 @@
+WINNER: 1
+
+Both answers give the same sound advice (Postgres FTS with a composite `btree_gin` index now, then pgvector with exact per-user distance and RRF hybrid search), but Answer 2 runs to about 420 words against a 300-word limit while Answer 1 stays near it (about 335), and Answer 2's extra caveats on account skew, p95 and syncing deletes don't make up for the overrun.

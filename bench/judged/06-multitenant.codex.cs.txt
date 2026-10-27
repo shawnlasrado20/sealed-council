@@ -1,0 +1,2 @@
+WINNER: 1
+Answer 1 is more accurate and security-conscious: it qualifies capacity claims, explains RLS’s limits, and requires trusted tenant identity, though both answers exceed the 300-word limit.

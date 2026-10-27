@@ -1,0 +1,2 @@
+WINNER: 2
+Answer 2 better prioritizes measurement, protects task success, and ties pricing to actual usage costs without assuming heavy-user skew, though it exceeds the 300-word limit.

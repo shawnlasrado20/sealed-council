@@ -1,0 +1,3 @@
+WINNER: 2
+
+Answer 2 designs cleaner experiments: it keeps the low-effort first box at the same price so convenience isn't confused with a discount, it measures against the actual 82% box-2 baseline, and it tracks skips separately from cancellations, while covering the same guardrails and things to avoid as Answer 1 (both answers likely run past the 300-word limit).

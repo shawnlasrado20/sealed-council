@@ -1,0 +1,2 @@
+WINNER: 1
+Answer 1 correctly explains that `None` is cached and treats shorter negative caching as optional, while Answer 2 unnecessarily changes that behavior; both exceed 300 words and leave the identified `fetch` key issue unfixed.

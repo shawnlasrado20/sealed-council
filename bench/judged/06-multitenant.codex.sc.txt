@@ -1,0 +1,2 @@
+WINNER: 2
+Answer 2 gives more accurate, complete isolation guidance and workload caveats, though both exceed 300 words and blur dedicated databases with physical separation; no external verification performed.

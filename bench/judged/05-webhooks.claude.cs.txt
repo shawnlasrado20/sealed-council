@@ -1,0 +1,3 @@
+WINNER: 1
+
+Answer 1 is more correct and more complete: it covers crash recovery with leases, keeps one failing endpoint from slowing the others, and sizes capacity by deliveries rather than events, while Answer 2 has malformed SQL (LIMIT before WHERE), ignores fan-out in its throughput estimate, and retries terminal 4xx errors for days.

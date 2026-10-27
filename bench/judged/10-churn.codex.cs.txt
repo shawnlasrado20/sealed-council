@@ -1,0 +1,2 @@
+WINNER: 1
+Answer 1 offers cleaner hypotheses and more focused metrics, avoids Answer 2’s misleading comparison of first-box and monthly churn rates, and exceeds the 300-word limit by less; neither answer meets that constraint.

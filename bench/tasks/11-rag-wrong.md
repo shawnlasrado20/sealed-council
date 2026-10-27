@@ -1,0 +1,1 @@
+AI question. A support chatbot uses RAG over 2,000 help-center articles (chunked at 1,000 tokens, top-3 vector search, GPT-class model). Spot checks show about 20% of answers are wrong or outdated. How would you find out where it fails, what eval would you build first, and which fixes would you try in what order? Answer in at most 300 words.

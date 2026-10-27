@@ -1,0 +1,2 @@
+WINNER: 1
+Answer 1 better handles uncertainty with realistic benchmarking and workload-based migration criteria, while Answer 2 makes unsupported latency guarantees and invents a 500M-note threshold; both exceed the word limit.

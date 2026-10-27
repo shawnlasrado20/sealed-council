@@ -1,0 +1,3 @@
+WINNER: 1
+
+Both answers find the same five real bugs and give equivalent fixes, but Answer 1 is slightly more robust (it rejects malformed responses, clamps negative Retry-After values, and resolves relative `next` URLs against `res.url` after redirects) and uses fewer words, which matters under the 300-word limit.

@@ -1,0 +1,2 @@
+WINNER: 1
+Answer 1 better isolates retrieval versus generation with expert-provided evidence and evaluates correctness, currency, and abstention together, while Answer 2 overstates what retrieval metrics alone can diagnose; both exceed 300 words.

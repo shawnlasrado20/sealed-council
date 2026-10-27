@@ -1,0 +1,3 @@
+WINNER: 1
+
+Answer 1 is more accurate: it correctly says a plain presigned PUT can't enforce the 25 MB limit, and it adds a pixel cap against decompression bombs, which addresses the memory problem directly; Answer 2 claims the presigned PUT policy enforces the size limit and calls Sidekiq a Postgres-backed queue, though Sidekiq uses Redis.

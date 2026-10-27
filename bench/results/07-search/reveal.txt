@@ -1,0 +1,24 @@
+A	codex	ok
+B	agent	ok
+C	claude	ok
+rank codex:
+RANK: C > B
+
+C gives the more practical growth path: exact similarity scoring within a user’s notes before adding approximate indexing, explicit attention to filtered-search recall, asynchronous embedding updates, and storage estimates. It also addresses indexing the ownership filter more concretely.
+
+B prematurely recommends approximate indexing, which adds complexity and can hurt recall when searches are restricted to small user subsets.
+
+Both overpromise latency from average account size alone. Neither establishes query volume, note lengths, account-size skew, hardware, or a representative benchmark. C’s fixed corpus-size migration threshold is also unjustified.
+
+Not checked: measured performance. Main risk: averages hide large accounts and contention with normal app traffic.rank claude:
+RANK: A > B
+
+A is the more technically sound answer. It catches a real problem with the "later" plan: approximate vector indexes can return too few relevant results when a selective per-user filter is applied, and that affects the semantic search path directly. It also says to check query plans so the owner filter and text search work together, to set the 300 ms target as a percentile under concurrent load, and to sync deletions to any second store. Its fallback order is sensible: hosted search before self-managed clusters.
+
+B is more decisive and has the best single point: about 250 notes per user means per-user scoping matters far more than corpus size. But it says the target will be met "easily" without asking for a benchmark. It also implies Postgres keyword ranking is BM25, which is wrong, and suggests approximate vector indexes on a heavily filtered workload without mentioning the recall problem. Both answers run slightly over the 300-word limit.
+rank agent:
+RANK: C > A
+
+Both pick the right now/later path: in-database lexical search first, vectors later, a separate cluster only if measured pain appears. C is sharper on the actual problem. It treats search as per-user, not 50M documents, so a composite owner-plus-text index, no extra store, and exact neighbor search on a small tenant set (ANN only for huge accounts) follow naturally. Storage cost, hybrid merge, and clear leave-criteria (OLTP contention, replica first, true cross-user or advanced relevance needs) make the later path concrete.
+
+A is careful and operationally mature—percentiles, largest-account load, query plans, don’t embed everything before proving value, hosted over self-managed as the escape hatch—but it recommends separate indexes, then warns they may not combine, which is a weaker design than C’s composite. C slightly overclaims latency on huge accounts; A’s measurement caution is the better hedge. C still wins on the one insight that decides the architecture.

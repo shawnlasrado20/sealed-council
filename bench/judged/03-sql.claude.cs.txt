@@ -1,0 +1,3 @@
+WINNER: 1
+
+Both answers give the same correct index, but Answer 2 says the scan "seeks to (lower_email, now() - 7 days)", which is wrong: with a `DESC` index the scan starts at the email's newest entry and stops at the 7-day cutoff, as Answer 1 says, and Answer 1 also adds two useful details Answer 2 lacks (`CONCURRENTLY` can't run inside a transaction block, and a partial index can't use `now()`).

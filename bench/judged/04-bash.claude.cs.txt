@@ -1,0 +1,3 @@
+WINNER: 1
+
+Answer 1 is more correct: it rightly says the loop does nothing when no files match (Answer 2 wrongly says the loop receives the literal `*.tar.gz`), and its safety check skips deletion unless a recent backup exists, whereas Answer 2's 7-file floor can still delete every backup in one run if more than 7 are old.

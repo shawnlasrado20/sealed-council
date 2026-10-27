@@ -1,0 +1,1 @@
+Product question. A solo developer built a CLI tool that turns screen recordings into step-by-step docs. 400 free users, 12 asked to pay. Options: $8/month individual, $29/month team, one-time $49 license, or usage-based. What pricing would you launch with, and what would you test first? Be concrete. Answer in at most 300 words.

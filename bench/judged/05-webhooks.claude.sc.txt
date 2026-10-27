@@ -1,0 +1,3 @@
+WINNER: 2
+
+Answer 2 is more correct: it commits each lease before sending the HTTP request and recovers work from expired leases. Answer 1 has a malformed SQL clause (`LIMIT` before `WHERE`), confusingly says to treat other 4xx responses as failures but still retry them, and never covers crash recovery or lock-holding during HTTP calls.

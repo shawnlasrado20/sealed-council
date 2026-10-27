@@ -1,0 +1,3 @@
+WINNER: 1
+
+Answer 1 is more correct about enforcement: it adds `WITH CHECK` policies, fails closed cleanly with `current_setting(..., true)`, and covers workers, caches, storage and connection reuse. It also states plainly what RLS cannot protect against, while Answer 2 assumes that "isolation" is usually just a questionnaire item.

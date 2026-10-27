@@ -1,0 +1,28 @@
+A	codex	ok
+B	claude	ok
+C	agent	ok
+rank claude:
+RANK: C > A
+
+C is more concrete and easier to act on. Its four failure labels (retrieval miss, chunk miss, generation error, outdated docs) map straight onto the parts of the pipeline. It names a "chunk miss" as its own failure, which ties to the brief's 1,000-token chunks. It defines exact metrics (Recall@3, citation faithfulness, correctness, abstention). Its closing rule ("Recall@3 high and faithfulness low means fix generation") turns the eval into a clear decision.
+
+A has one sharper idea: rerun generation with expert-picked evidence to separate retrieval failures from generation failures. It also warns well about overfitting to the benchmark. But it stays more generic, hedges on chunking, and gives no clear thresholds or decision logic.
+
+C has weaknesses too. "200-400 token chunks" and "a smaller grounded model" are stated as rules without justification. Both answers appear to go over the 300-word limit, so length doesn't separate them. Overall, C's specificity and diagnostic structure outweigh A's controlled experiment.
+
+(Your Brain files couldn't be read because file permission wasn't granted. That didn't affect the ranking.)
+rank codex:
+RANK: C > B
+
+C builds the stronger first eval: it measures retrieval, faithfulness, correctness, and abstention together, includes unanswerable questions, and tracks drift. Its final diagnostic rules make fixes depend on observed failures. B delays answer-level evaluation and exceeds the 300-word limit.
+
+Both sensibly prioritize corpus hygiene and retrieval before model changes. C loses points for overlapping failure categories, treating low similarity scores as reliable refusal signals, prescribing chunk sizes prematurely, and suggesting a smaller model without evidence. B separates coverage gaps and stale sources more clearly and usefully compares recall at different retrieval depths.
+
+Neither should apply its proposed fix order blindly; the measured failure distribution should decide.
+
+Skipped external verification; this ranking assesses the supplied reasoning, not demonstrated performance.rank agent:
+RANK: A > B
+
+A isolates corpus, retrieval, and generation with expert labels plus a gold-evidence swap, then builds a small held-out human eval that scores both evidence recall and answers (currency, completeness, citations, abstention) by intent. That matches the symptom—wrong or outdated replies—without collapsing it to one accuracy number.
+
+B’s five-way taxonomy and retrieval-first eval are cheaper and correctly flag chunking, which A underweights. But B guesses where failures concentrate, delays answer grading, and prescribes larger k and smaller chunks before measuring coverage. Both fix content, then retrieval, then grounded generation, model last; A is stricter about measuring before those knobs and names the real risk: overfitting a set that is not live traffic.

@@ -1,0 +1,2 @@
+WINNER: 1
+Answer 1 better handles crash recovery with leases, bounds concurrency, and accounts for delivery fan-out, though both exceed the 300-word limit.

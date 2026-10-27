@@ -1,0 +1,3 @@
+WINNER: 1
+
+Answer 1 has a sharper way to find failures (rerunning generation on expert-chosen evidence to separate retrieval errors from generation errors), a fuller first eval (abstention, results by failure type, LLM judge calibrated against human labels), and the advice to change one layer at a time, all in fewer words; Answer 2 is good and more concrete in places but runs further past the 300-word limit.

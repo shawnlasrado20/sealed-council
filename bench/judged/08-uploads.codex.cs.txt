@@ -1,0 +1,2 @@
+WINNER: 1
+Answer 1 is more correct about presigned upload size enforcement and safer image decoding, and covers stuck-job recovery, though both exceed the 300-word limit.

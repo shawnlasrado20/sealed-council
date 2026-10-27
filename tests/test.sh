@@ -16,7 +16,7 @@ tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 proj="$tmp/proj"
 mkdir -p "$proj"
-cd "$proj"
+cd "$proj" || exit 1
 export SC_HOME="$tmp/sc-home"
 export STUB_LOG="$tmp/stub-log"
 mkdir -p "$STUB_LOG" "$SC_HOME"
@@ -115,7 +115,7 @@ else
 fi
 
 # --- ask ---
-rm -rf "$STUB_LOG"/*
+rm -rf "${STUB_LOG:?}"/*
 mkdir -p "$STUB_LOG"
 if "$SC" ask "$round" >/dev/null 2>"$tmp/ask.err"; then
   pass "ask exit 0 with 3 seats"
@@ -131,14 +131,14 @@ else
 fi
 if grep -q "I am Claude" "$adir/claude.md"; then pass "self-id answer stored"
 else fail "claude answer missing self-id"; fi
-if ls "$round"/answer-*.md >/dev/null 2>&1 || ls "$round"/*.md 2>/dev/null | grep -qv brief.md; then
+if ls "$round"/answer-*.md >/dev/null 2>&1 || find "$round" -maxdepth 1 -name "*.md" ! -name brief.md | grep -q .; then
   fail "ask leaked answers into the round dir"
 else
   pass "ask does not write answers into the project round"
 fi
 
 # F7 rerun: skip existing unless --replace
-rm -rf "$STUB_LOG"/*
+rm -rf "${STUB_LOG:?}"/*
 mkdir -p "$STUB_LOG"
 if "$SC" ask "$round" >/dev/null 2>"$tmp/rerun.err"; then
   if [ -f "$STUB_LOG/claude.pwd" ]; then fail "rerun asked a seat that already answered"
@@ -146,7 +146,7 @@ if "$SC" ask "$round" >/dev/null 2>"$tmp/rerun.err"; then
 else
   fail "repeat ask failed: $(cat "$tmp/rerun.err")"
 fi
-rm -rf "$STUB_LOG"/*
+rm -rf "${STUB_LOG:?}"/*
 mkdir -p "$STUB_LOG"
 if "$SC" ask --replace "$round" >/dev/null 2>"$tmp/repl.err"; then
   if [ -f "$STUB_LOG/claude.pwd" ]; then pass "ask --replace reruns seats"
@@ -167,7 +167,7 @@ if [ "$iso_ok" -eq 1 ]; then pass "default ask uses a temp dir, not the project"
 else fail "default ask cwd was the project"; fi
 
 round_repo=$("$SC" new "repo flag")
-rm -rf "$STUB_LOG"/*
+rm -rf "${STUB_LOG:?}"/*
 mkdir -p "$STUB_LOG"
 if "$SC" ask --repo "$round_repo" >/dev/null 2>"$tmp/repo.err"; then
   if grep -qx "$proj" "$STUB_LOG/claude.pwd" && grep -qx "$proj" "$STUB_LOG/codex.pwd"; then
@@ -368,7 +368,7 @@ else
 fi
 
 # --- rank ---
-rm -rf "$STUB_LOG"/*
+rm -rf "${STUB_LOG:?}"/*
 mkdir -p "$STUB_LOG"
 if "$SC" rank "$round" >/dev/null 2>"$tmp/rank.err"; then
   pass "rank exit 0"
@@ -386,7 +386,7 @@ else
 fi
 # ranker never receives its own letter
 own_ok=1
-while IFS=$'\t' read -r letter seat hash; do
+while IFS=$'\t' read -r letter seat _; do
   p="$STUB_LOG/${seat}.prompt"
   if [ ! -f "$p" ]; then own_ok=0; continue; fi
   if grep -q "=== $letter ===" "$p"; then
@@ -447,7 +447,7 @@ fi
 spawn="$tmp/spawn"
 write_stub "$spawn/claude" 'sleep 30 & echo $! > "$STUB_LOG/child.pid"; wait'
 round_ch=$("$SC" new "child timeout")
-rm -rf "$STUB_LOG"/*
+rm -rf "${STUB_LOG:?}"/*
 mkdir -p "$STUB_LOG"
 PATH="$spawn:$ok:$PATH" SC_TIMEOUT=2 "$SC" ask "$round_ch" >/dev/null 2>"$tmp/ch.err" || true
 if [ -f "$STUB_LOG/child.pid" ]; then

@@ -1,0 +1,26 @@
+A	claude	ok
+B	agent	ok
+C	codex	ok
+rank claude:
+RANK: C > B
+
+C is the more rigorous answer. Its math is correct: $33 in cost against $20 in revenue means cutting cost by about 39% just to break even. It puts measuring cost per successful task first, which is the right first step, since cheap attempts that fail are expensive outcomes. It ties model routing to quality checks and moves up to a stronger model when checks fail. That protects the "without making the product worse" constraint directly. It also catches that a flat per-task allowance is a mistake, because tasks vary so much in cost. Spending limits, cost estimates before expensive runs, and the retention risk show real product judgment.
+
+B is punchy, concrete and well ordered, and its context-caching advice is strong. But it attacks an "unlimited seat" the brief never describes, and its cost-per-task targets are given without support. It also never says how to check that cost cuts don't hurt quality. Both answers run close to the 300-word limit.
+rank codex:
+RANK: A > B
+
+A gives a clearer financial target, prioritizes reducing wasted retries before changing pricing, and measures cost per successful task. Its routing proposal also preserves stronger reasoning for planning and difficult judgments.
+
+B makes stronger unsupported claims: a $1.10 task cost does not prove expensive reasoning is overused, retries do not necessarily cost an entire task, and average usage alone cannot establish that heavy users cause most losses. Routing “what next” decisions cheaply could also hurt outcomes.
+
+Both should first measure cost drivers and verify savings against task success rates. A’s claimed caching savings are too confident without workload evidence.
+
+Not checked: actual workload costs or achievable savings. Risk: context compression and routing can reduce quality unless validated.rank agent:
+RANK: A > C
+
+A leads with user-invisible cost cuts that match the given drivers (long context, tool loops, retries): cache repeated prompts, prune context, route cheap steps, then kill failed-loop waste. That order can close most of the $13 hole before anyone feels a worse product, and the “don’t silently downgrade or cap” line protects the constraint. The 40%/75% math also sets a real target, not a vibe.
+
+C is close and better on two points: cost per *successful* task, and pricing that is not a blunt task allowance (estimates, spend limits, heavy-user tiers). Putting “measure” first is still process, not a change, and folding cache/trim/loops into one bucket hides the highest-leverage move. Inference discounts last is fine but won’t save a structurally underpriced plan.
+
+A is the sharper operating plan; C is the wiser caveat. Combine A’s sequence with C’s pricing honesty.

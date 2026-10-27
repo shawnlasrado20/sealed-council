@@ -1,0 +1,3 @@
+WINNER: 2
+
+Answer 2 adds a test that separates retrieval failures from generation failures: rerun generation with the expert-chosen evidence. Its first eval also covers more of what matters (abstention, results broken down by failure type, and checking that updates reach the index), and it lets the measured failure counts reorder the fixes, so it is the more rigorous and actionable plan at about the same length.

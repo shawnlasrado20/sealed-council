@@ -1,0 +1,3 @@
+WINNER: 2
+
+Answer 2 builds the "without making the product worse" constraint into its plan: it measures cost per successful task first, checks every change against completion rate, and escalates to the frontier model when checks fail. Its pricing advice is also sharper (usage credits instead of flat task counts, cost estimates before expensive runs, user spending limits), plus a realistic note that 30 tasks at about $1 each can't fit in $20. Both answers likely exceed the 300-word limit, and Answer 2 by more.

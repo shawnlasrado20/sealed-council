@@ -1,0 +1,5 @@
+RANK: B > A
+
+B is more concrete and more decisive, which is what the brief asked for. It commits to one offer and spells out a sequence of tests with clear pass and fail thresholds. Two details make it more useful in practice: it judges the split test on cash collected rather than signups, and it handles hosted processing costs with a usage cap. It also gives a clear signal for when to add the team plan. Its weaknesses: it states some guesses as fact (for example, that a monthly plan "trains them to cancel"), its 50-user, two-week split is too small to be reliable, and it seems to run slightly over the 300-word limit.
+
+A is careful and honest about uncertainty. Its points that the decision rule is not statistically reliable, and that 12 buyers at $8 is only $96 a month, are good. But it hedges too much. Its recommended price makes little money, and its main test only checks the 12 interested users without comparing prices. As a result it is less useful for actually deciding on a price.

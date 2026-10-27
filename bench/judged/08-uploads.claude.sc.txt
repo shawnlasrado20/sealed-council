@@ -1,0 +1,3 @@
+WINNER: 2
+
+Answer 1 contains two factual errors: a plain presigned PUT cannot enforce a size limit, and Sidekiq runs on Redis, not Postgres. Answer 2 states the size limit correctly, and it also covers decompression bombs with a pixel cap, owner checks, reprocessing from kept originals and recovery of stuck `processing` jobs, though both answers go over the 300-word limit.

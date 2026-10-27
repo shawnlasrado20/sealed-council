@@ -1,0 +1,5 @@
+RANK: C > B
+
+Both have the same core design: direct upload to object storage with a signed URL, an asynchronous queue worker, polling for status, retries, a dead-letter queue, idempotency and cleanup. C ranks higher because a team of two could build it straight from the page. It gives a concrete key layout, a clear status enum, an allowed-type list, a specific retry count, and a scan for jobs stuck in processing. It also lets users retry processing without re-uploading, which is a real usability gain that B lacks. C states the minimal footprint plainly: one bucket, one queue, one worker.
+
+B is careful but more generic, with phrases like "where supported" and "appropriate access controls" that leave decisions open. Its strongest point is naming decompression bombs as the main risk and checking the real file format. C also caps pixels, so that advantage is small. C has a minor inconsistency: it returns "processing" right after upload while also defining an "uploading" state. Its "decode in chunks" claim is vague. Both answers run slightly over 300 words.

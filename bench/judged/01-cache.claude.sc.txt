@@ -1,0 +1,3 @@
+WINNER: 2
+
+Answer 2 is more correct because it confirms that caching `None` already works (a `(None, ts)` tuple is truthy), catches the stale-overwrite race that Answer 1 misses, explains why a single global lock would be wrong, and treats the negative-TTL point as a design choice rather than a bug, though both answers go over the 300-word limit and Answer 2 goes over by more.
